@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from .models import News
-from django.contrib.auth.models import User
 
 
 class CreateNewsSerializer(serializers.ModelSerializer):

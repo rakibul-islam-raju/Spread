@@ -3,8 +3,8 @@ import { IPublishedBy } from "./User";
 export type INews = {
 	id: number;
 	title: string;
-	description: string;
+	message: string;
 	published_at: string;
 	read: boolean;
-	published_by: IPublishedBy;
+	sender: IPublishedBy;
 };

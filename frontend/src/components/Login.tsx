@@ -7,13 +7,14 @@ import {
 	TextField,
 	Typography,
 } from "@mui/material";
+import axios from "axios";
 import { ChangeEvent, FC, FormEvent, useState } from "react";
 
 type Props = {
 	handleSetLoggedin: (value: boolean) => void;
 };
 
-export const Login: FC<Props> = () => {
+export const Login: FC<Props> = ({ handleSetLoggedin }) => {
 	const [loginData, setLoginData] = useState<{
 		username: string;
 		password: string;
@@ -26,7 +27,7 @@ export const Login: FC<Props> = () => {
 		setLoginData({ ...loginData, [e.target.name]: e.target.value });
 	};
 
-	const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+	const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
 		if (!loginData.username || !loginData.password) {
@@ -34,7 +35,16 @@ export const Login: FC<Props> = () => {
 			return;
 		}
 
-		console.log(loginData);
+		try {
+			const { data } = await axios.post(
+				`http://localhost:8000/api/token/`,
+				loginData
+			);
+			localStorage.setItem("spread_auth", JSON.stringify(data));
+			handleSetLoggedin(true);
+		} catch (err) {
+			console.log("error =>", err);
+		}
 	};
 
 	return (
@@ -68,7 +78,9 @@ export const Login: FC<Props> = () => {
 								type="password"
 								onChange={handleChange}
 							/>
-							<Button variant="contained">Login</Button>
+							<Button variant="contained" type="submit">
+								Login
+							</Button>
 						</Stack>
 					</form>
 				</Box>

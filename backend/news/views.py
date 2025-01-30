@@ -1,5 +1,6 @@
 from rest_framework import viewsets
-from rest_framework.response import Response
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 from .models import News
 from .serializers import CreateNewsSerializer, NewsListSerializer
@@ -11,20 +12,28 @@ class NewsViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == "list":
             return NewsListSerializer
-        elif self.action == "create":
-            return CreateNewsSerializer
-        return CreateNewsSerializer  # Default fallback
-
-    def list(self, request):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer_class()(queryset, many=True)
-        return Response(serializer.data)
-
-    def create(self, request):
-        serializer = self.get_serializer_class()(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        return Response(serializer.data, status=201)
+        return CreateNewsSerializer
 
     def perform_create(self, serializer):
-        serializer.save(sender=self.request.user)
+        # Save the news with sender
+        news = serializer.save(sender=self.request.user)
+
+        # Broadcast to receivers
+        self.broadcast_news(news)
+
+    def broadcast_news(self, news):
+        # Get channel layer
+        channel_layer = get_channel_layer()
+
+        # Serialize news for broadcasting
+        news_data = NewsListSerializer(news).data
+
+        # Broadcast to each receiver
+        for receiver in news.receivers.all():
+            async_to_sync(channel_layer.group_send)(
+                f"user_{receiver.id}",
+                {
+                    "type": "news_message",
+                    "news": {"type": "news_message", "data": news_data},
+                },
+            )
