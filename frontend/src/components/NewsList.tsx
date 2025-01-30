@@ -13,13 +13,16 @@ import {
 	Typography,
 } from "@mui/material";
 import React from "react";
+import { newsData } from "../data/news";
 
 const CustomListItem = styled(ListItem, {
 	shouldForwardProp: (prop) => prop !== "read",
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-})<{ read?: boolean }>(({ theme, read }) => ({
+})<{ read?: boolean; checked?: boolean }>(({ theme, read, checked }) => ({
 	cursor: "pointer",
-	backgroundColor: read ? "#accdec" : "transparent",
+	backgroundColor: checked ? "#ddefff" : "transparent",
+	borderLeft: !read ? "5px solid" : "none",
+	borderColor: theme.palette.primary.main,
 }));
 
 export const NewsList = () => {
@@ -37,50 +40,39 @@ export const NewsList = () => {
 				</Stack>
 				<Divider />
 				<List
-					sx={{ width: "100%", maxHeight: 500, bgcolor: "background.paper" }}
+					sx={{
+						width: "100%",
+						maxHeight: 500,
+						bgcolor: "background.paper",
+						overflowY: "auto",
+					}}
 				>
-					<CustomListItem alignItems="flex-start">
-						<ListItemAvatar>
-							<Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
-						</ListItemAvatar>
-						<ListItemText
-							primary="Brunch this weekend?"
-							secondary={
-								<React.Fragment>
-									<Typography
-										component="span"
-										variant="body2"
-										sx={{ color: "text.primary", display: "inline" }}
-									>
-										Ali Connors
-									</Typography>
-									{" — I'll be in your neighborhood doing errands this…"}
-								</React.Fragment>
-							}
-						/>
-						<Checkbox />
-					</CustomListItem>
-					<CustomListItem alignItems="flex-start" read>
-						<ListItemAvatar>
-							<Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
-						</ListItemAvatar>
-						<ListItemText
-							primary="Brunch this weekend?"
-							secondary={
-								<React.Fragment>
-									<Typography
-										component="span"
-										variant="body2"
-										sx={{ color: "text.primary", display: "inline" }}
-									>
-										Ali Connors
-									</Typography>
-									{" — I'll be in your neighborhood doing errands this…"}
-								</React.Fragment>
-							}
-						/>
-						<Checkbox />
-					</CustomListItem>
+					{newsData?.map((news) => (
+						<CustomListItem key={news.id} alignItems="flex-start">
+							<ListItemAvatar>
+								<Avatar
+									alt={news.published_by.full_name}
+									src="/static/images/avatar/1.jpg"
+								/>
+							</ListItemAvatar>
+							<ListItemText
+								primary={news.title}
+								secondary={
+									<React.Fragment>
+										<Typography
+											component="span"
+											variant="body2"
+											sx={{ color: "text.primary", display: "inline" }}
+										>
+											Ali Connors
+										</Typography>
+										{news.description}
+									</React.Fragment>
+								}
+							/>
+							<Checkbox />
+						</CustomListItem>
+					))}
 				</List>
 			</Card>
 		</>

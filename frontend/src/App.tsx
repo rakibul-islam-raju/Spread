@@ -6,8 +6,20 @@ import { Container, CssBaseline, Grid2 } from "@mui/material";
 import Topbar from "./components/TopBar";
 import { NewsList } from "./components/NewsList";
 import { UserList } from "./components/UserList";
+import { useState } from "react";
+import { Login } from "./components/Login";
 
 const App = () => {
+	const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
+
+	const handleSetLoggedin = (value: boolean) => {
+		setIsLoggedIn(value);
+	};
+
+	if (!isLoggedIn) {
+		return <Login handleSetLoggedin={handleSetLoggedin} />;
+	}
+
 	return (
 		<div>
 			<CssBaseline />
