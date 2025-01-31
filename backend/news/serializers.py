@@ -16,4 +16,7 @@ class NewsListSerializer(serializers.ModelSerializer):
         exclude = ["receivers"]
 
     def get_sender(self, obj):
-        return {"full_name": obj.sender.first_name, "username": obj.sender.username}
+        return {
+            "full_name": f"{obj.sender.first_name} {obj.sender.last_name}",
+            "username": obj.sender.username,
+        }

@@ -6,7 +6,7 @@ import { Container, CssBaseline, Grid2 } from "@mui/material";
 import Topbar from "./components/TopBar";
 import { NewsList } from "./components/NewsList";
 import { Broadcast } from "./components/Broadcast";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { Login } from "./components/Login";
 import { ITokens } from "./types";
 

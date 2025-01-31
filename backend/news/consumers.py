@@ -17,9 +17,11 @@ def get_user_from_token(token):
 
 
 class NewsConsumer(AsyncWebsocketConsumer):
-    async def connect(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(args, kwargs)
         self.user = AnonymousUser()
 
+    async def connect(self):
         # Extract and validate token
         query_string = self.scope["query_string"].decode()
 
