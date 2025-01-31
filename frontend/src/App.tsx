@@ -18,42 +18,6 @@ const App = () => {
 		setIsLoggedIn(value);
 	};
 
-	useEffect(() => {
-		// Fetch token from localStorage (if authentication is needed)
-		const authData = localStorage.getItem("spread_auth")
-			? JSON.parse(localStorage.getItem("spread_auth")!)
-			: null;
-		const token = authData?.token;
-
-		// Construct WebSocket URL with token (if needed)
-		const wsUrl = `ws://127.0.0.1:8000/ws/news/?token=${token}`;
-
-		// Create WebSocket connection
-		const socket = new WebSocket(wsUrl);
-
-		socket.onopen = () => {
-			console.log("WebSocket connected!");
-		};
-
-		socket.onmessage = (event) => {
-			const data = JSON.parse(event.data);
-			console.log("Received:", data);
-		};
-
-		socket.onerror = (error) => {
-			console.error("WebSocket Error:", error);
-		};
-
-		socket.onclose = () => {
-			console.log("WebSocket Disconnected");
-		};
-
-		// Cleanup on component unmount
-		return () => {
-			socket.close();
-		};
-	}, []);
-
 	useLayoutEffect(() => {
 		const authData = localStorage.getItem("spread_auth")
 			? JSON.parse(localStorage.getItem("spread_auth")!)

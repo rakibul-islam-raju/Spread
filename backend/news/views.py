@@ -7,7 +7,8 @@ from .serializers import CreateNewsSerializer, NewsListSerializer
 
 
 class NewsViewSet(viewsets.ModelViewSet):
-    queryset = News.objects.all()
+    def get_queryset(self):
+        return News.objects.filter(receivers=self.request.user)
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -15,25 +16,30 @@ class NewsViewSet(viewsets.ModelViewSet):
         return CreateNewsSerializer
 
     def perform_create(self, serializer):
-        # Save the news with sender
+        # Save news instance with sender
         news = serializer.save(sender=self.request.user)
 
-        # Broadcast to receivers
+        # Manually set receivers (Many-to-Many field)
+        receivers = serializer.validated_data.get("receivers", [])
+        if receivers:
+            news.receivers.set(receivers)  # Use set() instead of add()
+
+        # Broadcast news
         self.broadcast_news(news)
 
     def broadcast_news(self, news):
-        # Get channel layer
-        channel_layer = get_channel_layer()
+        try:
+            channel_layer = get_channel_layer()
 
-        # Serialize news for broadcasting
-        news_data = NewsListSerializer(news).data
+            news_data = NewsListSerializer(news).data
 
-        # Broadcast to each receiver
-        for receiver in news.receivers.all():
-            async_to_sync(channel_layer.group_send)(
-                f"user_{receiver.id}",
-                {
-                    "type": "news_message",
-                    "news": {"type": "news_message", "data": news_data},
-                },
-            )
+            for receiver in news.receivers.all():
+                group_name = f"user_{receiver.id}"
+
+                message = {"type": "news_message", "news": news_data}
+
+                async_to_sync(channel_layer.group_send)(group_name, message)
+
+        except Exception as e:
+            print(f"❌ Error in broadcast_news: {str(e)}")
+            raise e

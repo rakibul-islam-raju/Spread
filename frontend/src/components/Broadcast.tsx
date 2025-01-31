@@ -31,7 +31,7 @@ export const Broadcast: FC<Props> = ({ authData }) => {
 		setLoading(true);
 		try {
 			await axios.post(
-				"/api/news/",
+				"http://localhost:8000/api/news/",
 				{
 					message,
 					receivers: selectedUsers,

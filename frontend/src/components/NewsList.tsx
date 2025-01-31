@@ -51,18 +51,30 @@ export const NewsList: FC<Props> = ({ authData }) => {
 		fetchNews();
 
 		// Setup WebSocket
-		const socket = new WebSocket(`ws://${window.location.host}/ws/news/`);
+		const ws = new WebSocket(
+			`ws://127.0.0.1:8000/ws/news/?token=${authData.access}`
+		);
 
-		socket.onmessage = (event) => {
+		ws.onopen = () => {
+			console.log("WebSocket connected! 🎉");
+		};
+
+		ws.onerror = (error) => {
+			console.error("WebSocket error:", error);
+		};
+
+		ws.onclose = (event) => {
+			console.log("WebSocket closed:", event.code, event.reason);
+		};
+
+		ws.onmessage = (event) => {
 			const message = JSON.parse(event.data);
-			if (message.type === "news_message") {
-				// Add new news to the store
-				useNewsStore.getState().addNews(message.data);
-			}
+			// Add new news to the store
+			useNewsStore.getState().addNews(message);
 		};
 
 		return () => {
-			socket.close();
+			ws.close();
 		};
 	}, [setNews]);
 
