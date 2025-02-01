@@ -1,9 +1,17 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, generics
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from django.contrib.auth.models import User
 
 from .models import News
-from .serializers import CreateNewsSerializer, NewsListSerializer
+from .serializers import UserListSerializer, CreateNewsSerializer, NewsListSerializer
+
+
+class UserListView(generics.ListAPIView):
+    serializer_class = UserListSerializer
+
+    def get_queryset(self):
+        return User.objects.exclude(id=self.request.user.id)
 
 
 class NewsViewSet(viewsets.ModelViewSet):
@@ -21,8 +29,13 @@ class NewsViewSet(viewsets.ModelViewSet):
 
         # Manually set receivers (Many-to-Many field)
         receivers = serializer.validated_data.get("receivers", [])
+        to_all = serializer.validated_data.get("send_to_all", False)
+
+        if to_all:
+            receivers = User.objects.exclude(username=self.request.user.username)
+
         if receivers:
-            news.receivers.set(receivers)  # Use set() instead of add()
+            news.receivers.set(receivers)
 
         # Broadcast news
         self.broadcast_news(news)

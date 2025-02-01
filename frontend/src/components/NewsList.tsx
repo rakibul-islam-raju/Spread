@@ -57,7 +57,6 @@ export const NewsList: FC<Props> = ({ authData }) => {
 	const markAsRead = (newsId: number) => {
 		if (socket) {
 			socket.send(JSON.stringify({ action: "mark_as_read", news_id: newsId }));
-			console.log("sent ==>", newsId);
 		}
 	};
 
@@ -110,7 +109,6 @@ export const NewsList: FC<Props> = ({ authData }) => {
 
 		ws.onmessage = (event) => {
 			const data = JSON.parse(event.data);
-			console.log("recieved messages ==>", event);
 
 			if (data.status !== "success") {
 				console.log("error =>", data.message);
@@ -121,7 +119,6 @@ export const NewsList: FC<Props> = ({ authData }) => {
 				case "news_message":
 					// Add new news to the store
 					playSound();
-					// new Audio(AudioSound).play();
 					useNewsStore.getState().addNews(data.data);
 
 					// Scroll to top when new message arrives
