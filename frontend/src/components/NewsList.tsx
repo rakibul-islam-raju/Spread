@@ -40,20 +40,37 @@ type Props = {
 };
 
 export const NewsList: FC<Props> = ({ authData }) => {
-	const {
-		news,
-		setNews,
-		// updateReadStatus, markAllRead
-	} = useNewsStore();
+	const { news, setNews, updateReadStatus, markAllRead } = useNewsStore();
 
 	const listRef = useRef<HTMLUListElement>(null);
 
 	const [audio] = useState<HTMLAudioElement>(new Audio(AudioSound));
 	const [newItems, setNewItems] = useState<Set<number>>(new Set());
 	const [selectedItem, setSelectedItem] = useState<INews | null>(null);
+	const [socket, setSocket] = useState<WebSocket | null>(null);
 
 	const playSound = () => {
 		audio.play();
+	};
+
+	// Function to mark a single news as read
+	const markAsRead = (newsId: number) => {
+		if (socket) {
+			socket.send(JSON.stringify({ action: "mark_as_read", news_id: newsId }));
+			console.log("sent ==>", newsId);
+		}
+	};
+
+	// Function to mark all news as read
+	const markAllAsRead = () => {
+		const confirmed = window.confirm(
+			"Are you sure you want to mark all as read?"
+		);
+		if (confirmed) {
+			if (socket) {
+				socket.send(JSON.stringify({ action: "mark_all_as_read" }));
+			}
+		}
 	};
 
 	useEffect(() => {
@@ -79,6 +96,7 @@ export const NewsList: FC<Props> = ({ authData }) => {
 		);
 
 		ws.onopen = () => {
+			setSocket(ws);
 			console.log("WebSocket connected! 🎉");
 		};
 
@@ -91,31 +109,53 @@ export const NewsList: FC<Props> = ({ authData }) => {
 		};
 
 		ws.onmessage = (event) => {
-			const message = JSON.parse(event.data);
-			// Add new news to the store
-			playSound();
-			// new Audio(AudioSound).play();
-			useNewsStore.getState().addNews(message);
+			const data = JSON.parse(event.data);
+			console.log("recieved messages ==>", event);
 
-			// Scroll to top when new message arrives
-			if (listRef.current) {
-				listRef.current.scrollTo({ top: 0, behavior: "smooth" });
+			if (data.status !== "success") {
+				console.log("error =>", data.message);
+				return;
 			}
 
-			// Mark the new item for 3 seconds
-			setNewItems((prev) => {
-				const updated = new Set(prev);
-				updated.add(message.id);
-				return updated;
-			});
+			switch (data.type) {
+				case "news_message":
+					// Add new news to the store
+					playSound();
+					// new Audio(AudioSound).play();
+					useNewsStore.getState().addNews(data.data);
 
-			setTimeout(() => {
-				setNewItems((prev) => {
-					const updated = new Set(prev);
-					updated.delete(message.id);
-					return updated;
-				});
-			}, 5000);
+					// Scroll to top when new message arrives
+					if (listRef.current) {
+						listRef.current.scrollTo({ top: 0, behavior: "smooth" });
+					}
+
+					// Mark the new item for 3 seconds
+					setNewItems((prev) => {
+						const updated = new Set(prev);
+						updated.add(data.data.id);
+						return updated;
+					});
+
+					setTimeout(() => {
+						setNewItems((prev) => {
+							const updated = new Set(prev);
+							updated.delete(data.data.id);
+							return updated;
+						});
+					}, 5000);
+					break;
+
+				case "mark_as_read":
+					updateReadStatus(data.data.id);
+					break;
+
+				case "mark_all_as_read":
+					markAllRead();
+					break;
+
+				default:
+					break;
+			}
 		};
 
 		return () => {
@@ -150,7 +190,7 @@ export const NewsList: FC<Props> = ({ authData }) => {
 					</Typography>
 
 					<Stack direction="row" gap={2}>
-						<Button>Select all as read</Button>
+						<Button onClick={markAllAsRead}>Select all as read</Button>
 					</Stack>
 				</Stack>
 				<Divider />
@@ -167,7 +207,7 @@ export const NewsList: FC<Props> = ({ authData }) => {
 						<CustomListItem
 							key={newsItem.id}
 							alignItems="flex-start"
-							read={newsItem.read}
+							read={newsItem.is_read}
 							onClick={() => setSelectedItem(newsItem)}
 						>
 							<ListItemAvatar>
@@ -233,6 +273,7 @@ export const NewsList: FC<Props> = ({ authData }) => {
 					open={!!selectedItem}
 					handleClose={() => setSelectedItem(null)}
 					selectedItem={selectedItem}
+					markAsRead={markAsRead}
 				/>
 			)}
 		</>

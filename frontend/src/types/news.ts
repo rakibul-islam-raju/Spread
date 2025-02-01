@@ -5,6 +5,6 @@ export type INews = {
 	title: string;
 	message: string;
 	published_at: string;
-	read: boolean;
+	is_read: boolean;
 	sender: IPublishedBy;
 };

@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import {
 	Dialog,
 	DialogContent,
@@ -13,9 +13,21 @@ type Props = {
 	selectedItem: INews;
 	open: boolean;
 	handleClose: () => void;
+	markAsRead: (newsId: number) => void;
 };
 
-const PreviewModal: FC<Props> = ({ selectedItem, open, handleClose }) => {
+const PreviewModal: FC<Props> = ({
+	selectedItem,
+	open,
+	handleClose,
+	markAsRead,
+}) => {
+	useEffect(() => {
+		if (selectedItem && !selectedItem.is_read) {
+			markAsRead(selectedItem.id);
+		}
+	}, [selectedItem]);
+
 	return (
 		<Dialog open={open} onClose={() => handleClose()} maxWidth="md" fullWidth>
 			<DialogTitle>
