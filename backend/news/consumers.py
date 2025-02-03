@@ -117,7 +117,6 @@ class NewsConsumer(AsyncWebsocketConsumer):
             "status": "success",
             "message": "New news received",
         }
-        print("==>", json.dumps(data))
         try:
             await self.send(text_data=json.dumps(data))
         except Exception as e:

@@ -13,12 +13,13 @@ import {
 	Typography,
 } from "@mui/material";
 import { FC, useEffect, useRef, useState } from "react";
-import axios from "axios";
 import { useNewsStore } from "../store/newsSlice";
 import { ITokens } from "../types";
 import AudioSound from "../assets/beep.wav";
 import { INews } from "../types/news";
 import PreviewModal from "./PreviewModal";
+import { WS_BASE_URL } from "../config";
+import { api } from "../config/api";
 
 const CustomListItem = styled(ListItem, {
 	shouldForwardProp: (prop) => prop !== "read",
@@ -77,11 +78,7 @@ export const NewsList: FC<Props> = ({ authData }) => {
 
 		const fetchNews = async () => {
 			try {
-				const response = await axios.get("http://localhost:8000/api/news/", {
-					headers: {
-						Authorization: `Bearer ${authData.access}`,
-					},
-				});
+				const response = await api.get("/news/");
 				setNews(response.data?.results);
 			} catch (error) {
 				console.error("Error fetching news:", error);
@@ -90,9 +87,7 @@ export const NewsList: FC<Props> = ({ authData }) => {
 		fetchNews();
 
 		// Setup WebSocket
-		const ws = new WebSocket(
-			`ws://127.0.0.1:8000/ws/news/?token=${authData.access}`
-		);
+		const ws = new WebSocket(`${WS_BASE_URL}/news/?token=${authData.access}`);
 
 		ws.onopen = () => {
 			setSocket(ws);
@@ -159,24 +154,6 @@ export const NewsList: FC<Props> = ({ authData }) => {
 			ws.close();
 		};
 	}, [setNews]);
-
-	// const handleReadChange = async (newsId: number, read: boolean) => {
-	// 	try {
-	// 		await axios.patch(`/api/news/${newsId}/`, { read });
-	// 		updateReadStatus(newsId, read);
-	// 	} catch (error) {
-	// 		console.error("Error updating read status:", error);
-	// 	}
-	// };
-
-	// const handleMarkAllRead = async () => {
-	// 	try {
-	// 		await axios.post("/api/news/mark-all-read/");
-	// 		markAllRead();
-	// 	} catch (error) {
-	// 		console.error("Error marking all as read:", error);
-	// 	}
-	// };
 
 	return (
 		<>

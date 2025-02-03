@@ -1,47 +1,46 @@
 import {
-	Autocomplete,
 	Button,
 	Card,
+	Checkbox,
 	Divider,
+	FormControlLabel,
 	Stack,
 	TextField,
 	Typography,
 } from "@mui/material";
-import axios from "axios";
 import { FC, useState } from "react";
 import { ITokens } from "../types";
-
-const options = [
-	{ label: "Raju", id: 1 },
-	{ label: "John", id: 2 },
-];
+import { INewsPostData } from "../types/news";
+import { api } from "../config/api";
+import AsyncUserSearch from "./AsyncUserSearch";
 
 type Props = {
 	authData: ITokens;
 };
 
-export const Broadcast: FC<Props> = ({ authData }) => {
+export const Broadcast: FC<Props> = () => {
 	const [message, setMessage] = useState<string>("");
 	const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
 	const [loading, setLoading] = useState<boolean>(false);
+	const [sendToAll, setSendToAll] = useState(false);
+
+	const hasReceiver = selectedUsers.length > 0 || sendToAll;
+	const disableSubmitBtn = loading || !message || !hasReceiver;
 
 	const handlePublish = async () => {
-		if (!message || selectedUsers.length === 0) return;
+		if (!message || !hasReceiver) return;
 
 		setLoading(true);
+		const postaData: INewsPostData = {
+			message,
+			receivers: selectedUsers,
+		};
+
+		if (sendToAll) postaData.send_to_all = true;
+
 		try {
-			await axios.post(
-				"http://localhost:8000/api/news/",
-				{
-					message,
-					receivers: selectedUsers,
-				},
-				{
-					headers: {
-						Authorization: `Bearer ${authData.access}`,
-					},
-				}
-			);
+			await api.post("news/", { ...postaData });
+			setSendToAll(false);
 			setMessage("");
 			setSelectedUsers([]);
 		} catch (error) {
@@ -67,24 +66,28 @@ export const Broadcast: FC<Props> = ({ authData }) => {
 					value={message}
 					onChange={(e) => setMessage(e.target.value)}
 				/>
-				<Autocomplete
-					multiple
-					disablePortal
-					options={options}
-					value={options.filter((opt) => selectedUsers.includes(opt.id))}
-					onChange={(_, newValue) => {
-						setSelectedUsers(newValue.map((v) => v.id));
+				<FormControlLabel
+					control={
+						<Checkbox
+							name="send_to_all"
+							value={sendToAll}
+							onChange={(e) => setSendToAll(e.target.checked)}
+						/>
+					}
+					label="Broadcast to all"
+				/>
+				<AsyncUserSearch
+					disabled={sendToAll}
+					selectedUsers={selectedUsers}
+					onUserSelect={(users) => {
+						setSelectedUsers(users);
 					}}
-					sx={{ width: "100%" }}
-					renderInput={(params) => (
-						<TextField {...params} variant="standard" label="Users" />
-					)}
 				/>
 				<Button
 					fullWidth
 					variant="contained"
 					onClick={handlePublish}
-					disabled={loading || !message || selectedUsers.length === 0}
+					disabled={disableSubmitBtn}
 				>
 					{loading ? "Publishing..." : "Publish"}
 				</Button>
