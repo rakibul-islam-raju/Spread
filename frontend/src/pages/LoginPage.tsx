@@ -8,13 +8,12 @@ import {
 	Typography,
 } from "@mui/material";
 import axios from "axios";
-import { ChangeEvent, FC, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
+import authSlice from "../store/authSlice";
 
-type Props = {
-	handleSetLoggedin: (value: boolean) => void;
-};
+export const LoginPage = () => {
+	const { login } = authSlice();
 
-export const Login: FC<Props> = ({ handleSetLoggedin }) => {
 	const [loginData, setLoginData] = useState<{
 		username: string;
 		password: string;
@@ -40,8 +39,7 @@ export const Login: FC<Props> = ({ handleSetLoggedin }) => {
 				`http://localhost:8000/api/token/`,
 				loginData
 			);
-			localStorage.setItem("spread_auth", JSON.stringify(data));
-			handleSetLoggedin(true);
+			login(data);
 		} catch (err) {
 			console.log("error =>", err);
 		}

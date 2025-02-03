@@ -1,13 +1,13 @@
 import { create } from "zustand";
 import { INews } from "../types/news";
 
-interface NewsState {
+type NewsState = {
 	news: INews[];
 	setNews: (news: INews[]) => void;
 	addNews: (news: INews) => void;
 	updateReadStatus: (newsId: number) => void;
 	markAllRead: () => void;
-}
+};
 
 export const useNewsStore = create<NewsState>((set) => ({
 	news: [],

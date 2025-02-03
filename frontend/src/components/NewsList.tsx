@@ -12,14 +12,14 @@ import {
 	Tooltip,
 	Typography,
 } from "@mui/material";
-import { FC, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNewsStore } from "../store/newsSlice";
-import { ITokens } from "../types";
 import AudioSound from "../assets/beep.wav";
 import { INews } from "../types/news";
 import PreviewModal from "./PreviewModal";
 import { WS_BASE_URL } from "../config";
 import { api } from "../config/api";
+import authSlice from "../store/authSlice";
 
 const CustomListItem = styled(ListItem, {
 	shouldForwardProp: (prop) => prop !== "read",
@@ -36,11 +36,8 @@ const CustomListItem = styled(ListItem, {
 	},
 }));
 
-type Props = {
-	authData: ITokens;
-};
-
-export const NewsList: FC<Props> = ({ authData }) => {
+export const NewsList = () => {
+	const { access } = authSlice();
 	const { news, setNews, updateReadStatus, markAllRead } = useNewsStore();
 
 	const listRef = useRef<HTMLUListElement>(null);
@@ -87,7 +84,7 @@ export const NewsList: FC<Props> = ({ authData }) => {
 		fetchNews();
 
 		// Setup WebSocket
-		const ws = new WebSocket(`${WS_BASE_URL}/news/?token=${authData.access}`);
+		const ws = new WebSocket(`${WS_BASE_URL}/news/?token=${access}`);
 
 		ws.onopen = () => {
 			setSocket(ws);

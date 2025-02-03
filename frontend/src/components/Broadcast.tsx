@@ -8,17 +8,12 @@ import {
 	TextField,
 	Typography,
 } from "@mui/material";
-import { FC, useState } from "react";
-import { ITokens } from "../types";
+import { useState } from "react";
 import { INewsPostData } from "../types/news";
 import { api } from "../config/api";
 import AsyncUserSearch from "./AsyncUserSearch";
 
-type Props = {
-	authData: ITokens;
-};
-
-export const Broadcast: FC<Props> = () => {
+export const Broadcast = () => {
 	const [message, setMessage] = useState<string>("");
 	const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
 	const [loading, setLoading] = useState<boolean>(false);

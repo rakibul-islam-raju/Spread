@@ -5,11 +5,10 @@ import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import { Button } from "@mui/material";
 import CampaignIcon from "@mui/icons-material/Campaign";
+import authSlice from "../store/authSlice";
 
 export default function Topbar() {
-	const handleLogout = () => {
-		localStorage.clear();
-	};
+	const { logout } = authSlice();
 
 	return (
 		<Box sx={{ flexGrow: 1 }}>
@@ -24,7 +23,7 @@ export default function Topbar() {
 
 					<Box sx={{ flexGrow: 1 }} />
 
-					<Button variant="contained" color="warning" onClick={handleLogout}>
+					<Button variant="contained" color="warning" onClick={logout}>
 						Logout
 					</Button>
 				</Toolbar>
