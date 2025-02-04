@@ -14,7 +14,7 @@ SECRET_KEY = "django-insecure-cmd%$$(!i!3*p@an4buyj^q1ed6t(pevgi!q(y!l%ktrs$pn!(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['spreadit.rakibul-islam-raju.xyz', 'localhost']
 
 
 # Application definition
