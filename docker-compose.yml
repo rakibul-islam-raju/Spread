@@ -27,7 +27,7 @@ services:
     container_name: spreadit_nginx_proxy
     restart: always
     ports:
-      - "80:80"
+      - "8080:80"
     depends_on:
       - backend
       - frontend
